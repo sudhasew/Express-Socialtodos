@@ -1,0 +1,11 @@
+import express from "express";
+import cors from "cors";
+import socialroutes from "../socialroutes";
+import todoroutes from "../todoroutes";
+const app = express();
+const port = 3004;
+app.use(express.json());
+app.use(cors());
+app.use("/", todoroutes);
+app.use("/", socialroutes);
+app.listen(port, () => console.log(`Server started on port ${port}`));
