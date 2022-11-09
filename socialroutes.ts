@@ -37,6 +37,28 @@ routes.get("/users/:id", (req, res) => {
     .catch((error) => console.log(error));
 });
 
+routes.post("/users", (req, res) => {
+  const todoSocialPost = {
+    first_name: req.body.first_name,
+    last_name: req.body.last_name,
+    email: req.body.email,
+    password: req.body.password,
+    join_date: req.body.join_date,
+  };
+
+  db.one(
+    "insert into users (first_name,last_name,email,password,join_date) values (${first_name},${last_name},${email},${password},${join_date}) returning id,first_name,last_name,email,password,join_date",
+    todoSocialPost
+  )
+    .then((data) => {
+      return db.oneOrNone("select * from users where id=${id}", {
+        id: data.id,
+      });
+    })
+    .then((data) => res.json(data))
+    .catch((error) => res.status(500).send(error));
+});
+
 routes.post("/signup", (req, res) => {
   const hash = bcrypt.hashSync(req.body.password, saltRounds);
   const newUser = {
