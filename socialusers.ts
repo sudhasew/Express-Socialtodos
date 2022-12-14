@@ -1,16 +1,9 @@
 import express from "express";
-import pg from "pg-promise";
+import { db } from "./src";
 const routes = express.Router();
 const bcrypt = require("bcrypt");
 
 const saltRounds = 10;
-const db = pg()({
-  host: "localhost",
-  port: 5432,
-  user: "postgres",
-  password: "",
-  database: "socialtodos",
-});
 
 routes.get("/users", (req, res) => {
   console.log("here");
@@ -38,7 +31,7 @@ routes.get("/users/:id", (req, res) => {
 });
 
 routes.post("/users", (req, res) => {
-  const todoSocialPost = {
+  const socialtodoSocialPost = {
     first_name: req.body.first_name,
     last_name: req.body.last_name,
     email: req.body.email,
@@ -48,7 +41,7 @@ routes.post("/users", (req, res) => {
 
   db.one(
     "insert into users (first_name,last_name,email,password,join_date) values (${first_name},${last_name},${email},${password},${join_date}) returning id,first_name,last_name,email,password,join_date",
-    todoSocialPost
+    socialtodoSocialPost
   )
     .then((data) => {
       return db.oneOrNone("select * from users where id=${id}", {
@@ -104,9 +97,9 @@ routes.post("/login", (req, res) => {
   });
 });
 
-routes.get("/socialtodos-todo", (req, res) => {
+routes.get("/socialsocialtodos-socialtodo", (req, res) => {
   console.log("here");
-  db.many("select * from todo")
+  db.many("select * from socialtodo")
     .then((data) => {
       console.log(data);
       res.json(data);
@@ -116,12 +109,12 @@ routes.get("/socialtodos-todo", (req, res) => {
     });
 });
 
-routes.get("/socialtodos-todo/:id", (req, res) => {
-  const todoId = { id: req.params.id };
-  db.oneOrNone("select * from todo where id=${id}", todoId)
+routes.get("/socialsocialtodos-socialtodo/:id", (req, res) => {
+  const socialtodoId = { id: req.params.id };
+  db.oneOrNone("select * from socialtodo where id=${id}", socialtodoId)
     .then((data) => {
       if (!data) {
-        return res.status(404).send("todo with id not found");
+        return res.status(404).send("socialtodo with id not found");
       }
       console.log(data);
       return res.json(data);
@@ -129,8 +122,8 @@ routes.get("/socialtodos-todo/:id", (req, res) => {
     .catch((error) => console.log(error));
 });
 
-routes.post("/socialtodos-todo", (req, res) => {
-  const todoPost = {
+routes.post("/socialsocialtodos-socialtodo", (req, res) => {
+  const socialtodoPost = {
     title: req.body.title,
     description: req.body.description,
     due_date: req.body.due_date,
@@ -139,17 +132,19 @@ routes.post("/socialtodos-todo", (req, res) => {
   };
 
   db.one(
-    "insert into todo (title,description,due_date,completed,user_id) values (${title},${description},${due_date},${completed},${user_id}) returning id,title,description,due_date,completed,user_id",
-    todoPost
+    "insert into socialtodo (title,description,due_date,completed,user_id) values (${title},${description},${due_date},${completed},${user_id}) returning id,title,description,due_date,completed,user_id",
+    socialtodoPost
   )
     .then((data) => {
-      return db.oneOrNone("select * from todo where id=${id}", { id: data.id });
+      return db.oneOrNone("select * from socialtodo where id=${id}", {
+        id: data.id,
+      });
     })
     .then((data) => res.json(data))
     .catch((error) => res.status(500).send(error));
 });
 
-routes.put("/socialtodos-todo/:id", (req, res) => {
+routes.put("/socialsocialtodos-socialtodo/:id", (req, res) => {
   console.log(
     "hello here",
     req.params.id,
@@ -160,7 +155,7 @@ routes.put("/socialtodos-todo/:id", (req, res) => {
     req.body.user_id
   );
   db.oneOrNone(
-    "update todo set (title,description,due_date,completed) = ($(title),$(description),$(due_date),$(completed)) where id=$(id) returning id,title,description,due_date,completed,user_id",
+    "update socialtodo set (title,description,due_date,completed) = ($(title),$(description),$(due_date),$(completed)) where id=$(id) returning id,title,description,due_date,completed,user_id",
     {
       id: req.params.id,
       title: req.body.title,
@@ -176,9 +171,9 @@ routes.put("/socialtodos-todo/:id", (req, res) => {
     });
 });
 
-routes.delete("/socialtodos-todo/:id", (req, res) => {
+routes.delete("/socialsocialtodos-socialtodo/:id", (req, res) => {
   db.one(
-    "delete from todo where id=${id} returning id,title,description,due_date,completed,user_id",
+    "delete from socialtodo where id=${id} returning id,title,description,due_date,completed,user_id",
     { id: req.params.id }
   )
     .then((data) => res.json(data))

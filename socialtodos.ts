@@ -1,5 +1,5 @@
 import express from "express";
-import pg from "pg-promise";
+import { db } from "./src";
 const Joi = require("joi");
 const routes = express.Router();
 
@@ -13,50 +13,44 @@ const schema = Joi.object({
   completed: Joi.boolean().required(),
 });
 
-const db = pg()({
-  host: "localhost",
-  port: 5432,
-  user: "postgres",
-  password: "",
-  database: "todo",
-});
-
-routes.get("/todo", (req, res) => {
-  db.manyOrNone("select * from todo")
+routes.get("/socialtodo", (req, res) => {
+  db.manyOrNone("select * from socialtodo")
     .then((data) => res.json(data))
     .catch((error) => console.log(error));
 });
 
-routes.get("/todo/:id", (req, res) => {
-  db.oneOrNone("select * from todo where id=${id}", { id: req.params.id })
+routes.get("/socialtodo/:id", (req, res) => {
+  db.oneOrNone("select * from socialtodo where id=${id}", { id: req.params.id })
     .then((data) => res.json(data))
-    .catch((error) => console.log(error));
+    .catch((error) => console.log("error is", error));
 });
 
-routes.post("/todo/", (req, res) => {
-  const todo = {
+routes.post("/socialtodo/", (req, res) => {
+  const createsocialtodo = {
     title: req.body.title,
     description: req.body.description,
     due_date: req.body.due_date,
     completed: req.body.completed,
   };
-  const valid = schema.validate(todo);
+  const valid = schema.validate(createsocialtodo);
 
   if (valid.error) {
     return res.status(400).send(valid.error);
   }
   db.one(
-    "insert into todo(title,description,due_date,completed) values (${title},${description},${due_date},${completed}) returning id,title,description,due_date,completed",
-    todo
+    "insert into socialtodo(title,description,due_date,completed) values (${title},${description},${due_date},${completed}) returning id,title,description,due_date,completed",
+    createsocialtodo
   )
     .then((data) => {
-      return db.oneOrNone("select * from todo where id=${id}", { id: data.id });
+      return db.oneOrNone("select * from socialtodo where id=${id}", {
+        id: data.id,
+      });
     })
     .then((data) => res.json(data))
     .catch((error) => res.status(500).send(error));
 });
 
-routes.put("/todo/:id", (req, res) => {
+routes.put("/socialtodo/:id", (req, res) => {
   console.log(
     req.params.id,
     req.body.title,
@@ -65,7 +59,7 @@ routes.put("/todo/:id", (req, res) => {
     req.body.completed
   );
   db.oneOrNone(
-    "update todo set (title,description,due_date,completed) = ($(title),$(description),$(due_date),$(completed)) where id=$(id) returning id,title,description,due_date,completed",
+    "update socialtodo set (title,description,due_date,completed) = ($(title),$(description),$(due_date),$(completed)) where id=$(id) returning id,title,description,due_date,completed",
     {
       id: req.params.id,
       title: req.body.title,
@@ -80,9 +74,9 @@ routes.put("/todo/:id", (req, res) => {
     });
 });
 
-routes.delete("/todo/:id", (req, res) => {
+routes.delete("/socialtodo/:id", (req, res) => {
   db.oneOrNone(
-    "delete from todo where id = ${id} returning id,title,description,due_date,completed",
+    "delete from socialtodo where id = ${id} returning id,title,description,due_date,completed",
     { id: req.params.id }
   )
     .then((data) => res.json(data))
